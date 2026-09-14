@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>洋葱 OnionMind · 笔记界面原型</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --blue-950: #102d78;
+      --blue-800: #174fb8;
+      --blue-700: #1761dc;
+      --blue-600: #2671eb;
+      --ink: #172048;
+      --muted: #6f7593;
+      --line: #dddff3;
+      --lavender: #f2efff;
+      --lavender-strong: #e5e9ff;
+      --paper: #fffefa;
+      --white: #fff;
+      --danger: #d84a4a;
+      --shadow: 0 18px 55px rgba(67, 74, 143, .12);
+      --soft-shadow: 0 8px 28px rgba(67, 74, 143, .09);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Microsoft YaHei UI", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+      background:
+        radial-gradient(circle at 52% 8%, rgba(255,255,255,.95), transparent 30%),
+        linear-gradient(135deg, #f5f2ff 0%, #f0efff 46%, #eef4ff 100%);
+    }
+
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(38, 113, 235, .22);
+      outline-offset: 2px;
+    }
+
+    .app { min-height: 100vh; display: grid; grid-template-columns: 236px minmax(0, 1fr); }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 30px 18px 24px;
+      color: white;
+      background: linear-gradient(165deg, #2d63ca 0%, #1452b8 62%, #0f469f 100%);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 8px 0 35px rgba(24, 71, 166, .12);
+      z-index: 5;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; padding: 0 6px; }
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 13px;
+      background: white;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 10px 25px rgba(6, 39, 112, .22);
+    }
+    .brand-mark svg { width: 37px; height: 37px; }
+    .brand-cn { font: 500 26px/1 "STKaiti", "KaiTi", serif; letter-spacing: 2px; }
+    .brand-en { margin-top: 4px; font-size: 11px; opacity: .68; letter-spacing: .8px; }
+
+    .nav { margin-top: 62px; display: grid; gap: 10px; }
+    .nav-item {
+      border: 0;
+      color: rgba(255,255,255,.62);
+      background: transparent;
+      min-height: 54px;
+      padding: 0 16px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      text-align: left;
+      transition: .2s ease;
+    }
+    .nav-item:hover { color: white; background: rgba(255,255,255,.08); }
+    .nav-item.active {
+      color: white;
+      background: rgba(255,255,255,.18);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.25), 0 0 0 5px rgba(102, 165, 255, .16);
+    }
+    .nav-index { width: 19px; font-size: 11px; opacity: .72; }
+    .nav-label { font-size: 16px; }
+
+    .account {
+      margin-top: auto;
+      padding: 22px 10px 0;
+      border-top: 1px solid rgba(255,255,255,.18);
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.16); display: grid; place-items: center; }
+    .account-name { font-size: 14px; font-weight: 700; }
+    .account-type { font-size: 11px; opacity: .6; margin-top: 3px; }
+
+    .main { min-width: 0; }
+    .topbar {
+      height: 58px;
+      padding: 0 30px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 26px;
+      border-bottom: 1px solid rgba(210, 207, 233, .8);
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(18px);
+    }
+    .beta { color: var(--blue-700); font-size: 12px; font-weight: 800; letter-spacing: 1.4px; }
+    .privacy { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
+    .mobile-brand, .menu-btn { display: none; }
+
+    .page { padding: 18px clamp(20px, 3vw, 48px) 34px; max-width: 1540px; margin: 0 auto; }
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 16px; }
+    .eyebrow { margin: 0 0 5px; color: var(--blue-700); font-size: 11px; font-weight: 800; letter-spacing: 3px; }
+    h1 { margin: 0; font: 500 clamp(31px, 3vw, 46px)/1.12 "STSong", "SimSun", serif; letter-spacing: -1px; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 14px; }
+    .heading-action { display: none; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(250px, 310px) minmax(520px, 1fr);
+      gap: 18px;
+      align-items: stretch;
+      min-height: calc(100vh - 157px);
+    }
+
+    .recent-panel, .editor-panel {
+      border: 1px solid rgba(211, 212, 236, .88);
+      background: rgba(255,255,255,.64);
+      box-shadow: var(--soft-shadow);
+      border-radius: var(--radius);
+    }
+
+    .recent-panel { padding: 14px; display: flex; flex-direction: column; min-height: 0; }
+    .recent-tools { display: grid; grid-template-columns: 1fr 42px; gap: 8px; }
+    .search { position: relative; }
+    .search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 16px; color: #8b91ac; }
+    .search input {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 0 12px 0 39px;
+      color: var(--ink);
+      background: rgba(255,255,255,.78);
+    }
+    .icon-btn, .new-btn, .primary-btn, .secondary-btn, .ghost-btn {
+      border: 0;
+      border-radius: 13px;
+      min-height: 42px;
+    }
+    .icon-btn { color: white; background: var(--blue-700); font-size: 23px; box-shadow: 0 8px 18px rgba(23,97,220,.22); }
+    .section-title { margin: 15px 3px 9px; display: flex; align-items: center; justify-content: space-between; }
+    .section-title strong { font-size: 13px; }
+    .note-count { color: var(--muted); font-size: 12px; }
+    .notes-list { display: grid; gap: 8px; overflow: auto; padding: 2px; scrollbar-width: thin; }
+    .note-card {
+      position: relative;
+      width: 100%;
+      min-height: 92px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 12px 37px 11px 14px;
+      color: var(--ink);
+      background: rgba(255,254,250,.9);
+      text-align: left;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .note-card:hover { transform: translateY(-1px); border-color: #bfc9ee; }
+    .note-card.active { border-color: #a8c3ff; background: linear-gradient(135deg, #eff5ff, #f4f1ff); box-shadow: inset 3px 0 0 #4a87ef; }
+    .note-time { color: #7d839f; font-size: 11px; }
+    .note-title { display: block; margin-top: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 15px; font-weight: 800; }
+    .note-preview { display: block; margin-top: 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #737995; font-size: 12px; }
+    .more-btn { position: absolute; top: 10px; right: 10px; width: 27px; height: 27px; border: 0; border-radius: 8px; background: transparent; color: #7b82a0; font-weight: 800; }
+    .more-btn:hover { background: rgba(69, 86, 141, .08); }
+
+    .editor-panel { padding: 18px; display: flex; flex-direction: column; min-width: 0; background: rgba(255,254,250,.94); box-shadow: var(--shadow); }
+    .title-input {
+      width: 100%;
+      min-height: 56px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 0 17px;
+      color: var(--ink);
+      background: rgba(255,255,255,.72);
+      font: 500 24px/1.2 "STSong", "SimSun", serif;
+    }
+    .title-input::placeholder, .body-input::placeholder { color: #a2a6bb; }
+    .editor-meta { min-height: 46px; padding: 0 6px; display: flex; align-items: center; justify-content: space-between; color: #787f9d; font-size: 12px; }
+    .meta-left, .meta-right { display: flex; align-items: center; gap: 8px; }
+    .meta-icon { width: 17px; height: 17px; }
+    .ghost-btn { min-height: 32px; padding: 0 9px; color: #717996; background: transparent; }
+    .ghost-btn:hover { background: #f1f2fa; }
+    .body-input {
+      width: 100%;
+      min-height: 300px;
+      flex: 1;
+      resize: none;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 17px;
+      color: #333b5e;
+      background: rgba(255,255,255,.74);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+    .attachments { margin-top: 14px; }
+    .attachments-title { margin: 0 0 9px; color: #5f6686; font-size: 12px; font-weight: 800; }
+    .attachment-row { display: flex; gap: 9px; min-height: 70px; }
+    .thumb, .add-thumb {
+      width: 92px;
+      height: 70px;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      flex: 0 0 auto;
+    }
+    .thumb { border: 1px solid #d9dcef; background: #eef2ff; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .remove-image { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border: 0; border-radius: 50%; background: rgba(255,255,255,.94); color: var(--ink); box-shadow: 0 3px 8px rgba(0,0,0,.14); }
+    .add-thumb { border: 1px dashed #aeb6d3; background: rgba(255,255,255,.5); color: #737b9a; display: grid; place-items: center; text-align: center; font-size: 11px; line-height: 1.35; }
+    .add-thumb span { font-size: 24px; display: block; color: var(--blue-700); }
+    .editor-footer { margin-top: 14px; padding-top: 13px; border-top: 1px solid #eeeefa; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .footer-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .secondary-btn { padding: 0 15px; color: var(--blue-700); background: #edf1ff; font-weight: 800; }
+    .file-hint { color: #858ba5; font-size: 11px; white-space: nowrap; }
+    .primary-btn { min-width: 124px; padding: 0 22px; color: white; background: linear-gradient(135deg, var(--blue-600), #1557c7); font-weight: 800; box-shadow: 0 10px 24px rgba(28, 96, 214, .22); }
+    .primary-btn:hover { filter: brightness(1.04); transform: translateY(-1px); }
+    #fileInput { display: none; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      z-index: 20;
+      transform: translate(-50%, 18px);
+      padding: 11px 17px;
+      border-radius: 999px;
+      color: white;
+      background: rgba(21, 31, 68, .92);
+      box-shadow: 0 12px 30px rgba(20, 29, 65, .22);
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .22s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .mobile-sheet-backdrop { display: none; }
+
+    @media (max-width: 1080px) {
+      .app { grid-template-columns: 196px minmax(0, 1fr); }
+      .workspace { grid-template-columns: 270px minmax(440px, 1fr); }
+      .sidebar { padding-inline: 14px; }
+      .brand-en { display: none; }
+      .page { padding-inline: 18px; }
+    }
+
+    @media (max-width: 760px) {
+      body { background: linear-gradient(150deg, #f6f3ff, #eef4ff); }
+      .app { display: block; }
+      .sidebar { display: none; }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        height: 60px;
+        padding: 0 14px;
+        justify-content: space-between;
+      }
+      .mobile-brand { display: flex; align-items: center; gap: 8px; color: var(--blue-700); font: 500 22px/1 "STKaiti", "KaiTi", serif; }
+      .mobile-brand .brand-mark { width: 34px; height: 34px; border-radius: 10px; box-shadow: none; }
+      .mobile-brand .brand-mark svg { width: 29px; height: 29px; }
+      .menu-btn { display: grid; width: 38px; height: 38px; place-items: center; border: 0; border-radius: 11px; color: var(--ink); background: transparent; font-size: 23px; }
+      .topbar-left { display: flex; align-items: center; gap: 5px; }
+      .beta { display: none; }
+      .privacy span { display: none; }
+      .privacy { width: 36px; height: 36px; justify-content: center; border-radius: 50%; background: #edf0ff; color: var(--blue-700); }
+      .page { padding: 15px 12px calc(22px + env(safe-area-inset-bottom)); }
+      .page-heading { align-items: center; margin-bottom: 12px; }
+      .eyebrow { display: none; }
+      h1 { font: 800 27px/1.2 "Microsoft YaHei UI", sans-serif; letter-spacing: 0; }
+      .subtitle { font-size: 12px; margin-top: 4px; }
+      .heading-action { display: block; border: 0; border-radius: 12px; min-height: 42px; padding: 0 15px; color: white; background: var(--blue-700); font-weight: 800; }
+      .workspace { display: flex; flex-direction: column; min-height: auto; gap: 11px; }
+      .recent-panel { order: 0; padding: 10px; border-radius: 17px; }
+      .recent-tools { grid-template-columns: 1fr 44px; }
+      .search input { height: 42px; }
+      .section-title { margin-block: 10px 7px; }
+      .notes-list { grid-auto-flow: column; grid-auto-columns: minmax(205px, 72vw); grid-template-columns: none; overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; scroll-snap-type: x proximity; }
+      .note-card { min-height: 82px; scroll-snap-align: start; }
+      .note-card:nth-child(n+4) { display: none; }
+      .editor-panel { order: 1; min-height: calc(100vh - 310px); padding: 12px; border-radius: 18px; }
+      .title-input { min-height: 50px; font-size: 21px; }
+      .editor-meta { min-height: 42px; }
+      .body-input { min-height: 310px; resize: vertical; }
+      .attachments { margin-top: 12px; }
+      .attachment-row { overflow-x: auto; padding-bottom: 3px; }
+      .thumb, .add-thumb { width: 79px; height: 64px; }
+      .editor-footer {
+        position: sticky;
+        bottom: 0;
+        margin: 12px -12px -12px;
+        padding: 11px 12px calc(11px + env(safe-area-inset-bottom));
+        background: rgba(255,254,250,.94);
+        backdrop-filter: blur(14px);
+        border-radius: 0 0 18px 18px;
+      }
+      .footer-left { flex: 1; }
+      .secondary-btn, .primary-btn { min-height: 46px; flex: 1; padding-inline: 10px; }
+      .primary-btn { min-width: 0; }
+      .file-hint { display: none; }
+      .toast { bottom: calc(18px + env(safe-area-inset-bottom)); }
+    }
+
+    @media (max-width: 390px) {
+      .subtitle { max-width: 255px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .heading-action { padding-inline: 12px; }
+      .editor-meta { font-size: 11px; }
+      .ghost-btn { padding-inline: 5px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none"><path d="M27.5 5.5c1.7 4.2-.1 6.6-2.4 8.3 8.1.7 14.4 7 14.4 14.7 0 8.2-6.9 14.8-15.5 14.8S8.5 36.7 8.5 28.5c0-7.2 5.4-13.2 12.7-14.5-1.6-2.7-.6-5.8 1.9-8.5 1.4 3.3 2.7 4.5 4.4 0Z" fill="#ECE9FF" stroke="#3A75E8" stroke-width="2"/><path d="M24 17c-5.5 3.8-9 7.5-9 12.1 0 5 4.1 9 9.2 9 5.6 0 9.9-4.2 9.6-9.4-.2-4.8-4.5-8.4-9.8-11.7Z" fill="#FFD9A3" stroke="#7B68E8" stroke-width="1.7"/><path d="M25 22c-2.9 2.5-4.5 4.7-4.5 7.1 0 2.5 1.8 4.3 4.1 4.3 2.7 0 4.7-2 4.6-4.7-.1-2.3-1.7-4.4-4.2-6.7Z" fill="#FFF8E8"/><path d="M31 9c3 .6 4.9-.5 6.4-2.8-.3 3.6-2 5.7-5.2 6.4" stroke="#3A75E8" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div><div class="brand-cn">洋葱</div><div class="brand-en">OnionMind</div></div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active"><span class="nav-index">01</span><span class="nav-label">我的笔记</span></button>
+        <button class="nav-item"><span class="nav-index">02</span><span class="nav-label">知乎收藏</span></button>
+        <button class="nav-item"><span class="nav-index">03</span><span class="nav-label">记忆卡片</span></button>
+        <button class="nav-item"><span class="nav-index">04</span><span class="nav-label">认知反馈</span></button>
+      </nav>
+
+      <div class="account">
+        <div class="avatar">横</div>
+        <div><div class="account-name">横序</div><div class="account-type">内测账号</div></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-btn" aria-label="打开菜单">☰</button>
+          <div class="mobile-brand">
+            <div class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none"><path d="M27.5 5.5c1.7 4.2-.1 6.6-2.4 8.3 8.1.7 14.4 7 14.4 14.7 0 8.2-6.9 14.8-15.5 14.8S8.5 36.7 8.5 28.5c0-7.2 5.4-13.2 12.7-14.5-1.6-2.7-.6-5.8 1.9-8.5 1.4 3.3 2.7 4.5 4.4 0Z" fill="#ECE9FF" stroke="#3A75E8" stroke-width="2"/><path d="M24 17c-5.5 3.8-9 7.5-9 12.1 0 5 4.1 9 9.2 9 5.6 0 9.9-4.2 9.6-9.4-.2-4.8-4.5-8.4-9.8-11.7Z" fill="#FFD9A3" stroke="#7B68E8" stroke-width="1.7"/></svg>
+            </div>
+            洋葱
+          </div>
+        </div>
+        <span class="beta">PRIVATE BETA</span>
+        <span class="privacy" title="照片只保存在本地，不会发送给 AI">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>照片不会发送给 AI</span>
+        </span>
+      </header>
+
+      <div class="page">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">CAPTURE</p>
+            <h1>留下此刻的想法</h1>
+            <p class="subtitle">文字属于你的私人空间。照片只保存与展示，不参与 AI 分析。</p>
+          </div>
+          <button class="heading-action" id="mobileNewBtn">＋ 新建</button>
+        </div>
+
+        <section class="workspace" aria-label="笔记工作区">
+          <aside class="recent-panel">
+            <div class="recent-tools">
+              <label class="search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg>
+                <input id="searchInput" type="search" placeholder="搜索笔记…" aria-label="搜索笔记">
+              </label>
+              <button class="icon-btn" id="newBtn" title="新建笔记" aria-label="新建笔记">＋</button>
+            </div>
+            <div class="section-title"><strong>最近笔记</strong><span class="note-count" id="noteCount">4 条</span></div>
+            <div class="notes-list" id="notesList"></div>
+          </aside>
+
+          <article class="editor-panel">
+            <input class="title-input" id="titleInput" maxlength="60" placeholder="标题（可选）" aria-label="笔记标题">
+            <div class="editor-meta">
+              <div class="meta-left">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+                <span id="editTime">现在</span>
+              </div>
+              <div class="meta-right"><span id="charCount">0 个字</span><button class="ghost-btn" id="deleteBtn">删除</button></div>
+            </div>
+            <textarea class="body-input" id="bodyInput" maxlength="10000" placeholder="在这里写下你的想法…" aria-label="笔记正文"></textarea>
+
+            <section class="attachments" aria-label="图片附件">
+              <p class="attachments-title">图片附件（可选）</p>
+              <div class="attachment-row" id="attachmentRow">
+                <button class="add-thumb" id="addThumbBtn"><span>＋</span>添加图片</button>
+              </div>
+            </section>
+
+            <footer class="editor-footer">
+              <div class="footer-left">
+                <button class="secondary-btn" id="photoBtn">▧&nbsp; 添加照片</button>
+                <span class="file-hint">最多 3 张 · 单张 5 MB · 仅本地预览</span>
+              </div>
+              <button class="primary-btn" id="saveBtn">保存笔记</button>
+            </footer>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+          </article>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const initialNotes = [
+      { id: 1, title: "mock002", body: "今天的想法，继续完善这个方案。", time: "2026/9/14 06:18" },
+      { id: 2, title: "mock001", body: "关于产品细节的一些思考与记录。", time: "2026/9/14 06:18" },
+      { id: 3, title: "mock", body: "手机电脑跨设备使用的体验记录。", time: "2026/9/14 06:17" },
+      { id: 4, title: "早起的灵感", body: "清晨的一些想法，关于生活、工作与成长。", time: "2026/9/14 04:18" }
+    ];
+
+    let notes = initialNotes.map(note => ({ ...note, images: [] }));
+    let currentId = notes[0].id;
+    let pendingImages = [];
+
+    const $ = selector => document.querySelector(selector);
+    const notesList = $("#notesList");
+    const titleInput = $("#titleInput");
+    const bodyInput = $("#bodyInput");
+    const searchInput = $("#searchInput");
+    const attachmentRow = $("#attachmentRow");
+    const fileInput = $("#fileInput");
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
+    }
+
+    function formatNow() {
+      return new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date()).replace(/\//g, "/");
+    }
+
+    function renderNotes(query = "") {
+      const keyword = query.trim().toLowerCase();
+      const filtered = notes.filter(note => `${note.title} ${note.body}`.toLowerCase().includes(keyword));
+      $("#noteCount").textContent = `${filtered.length} 条`;
+      notesList.innerHTML = filtered.length ? filtered.map(note => `
+        <button class="note-card ${note.id === currentId ? "active" : ""}" data-id="${note.id}">
+          <span class="note-time">${escapeHtml(note.time)}</span>
+          <span class="note-title">${escapeHtml(note.title || "无标题笔记")}</span>
+          <span class="note-preview">${escapeHtml(note.body || "还没有正文")}</span>
+          <span class="more-btn" aria-hidden="true">•••</span>
+        </button>
+      `).join("") : '<div style="padding:28px 10px;text-align:center;color:#858ba5;font-size:13px">没有找到相关笔记</div>';
+    }
+
+    function renderEditor() {
+      const note = notes.find(item => item.id === currentId);
+      titleInput.value = note?.title || "";
+      bodyInput.value = note?.body || "";
+      pendingImages = [...(note?.images || [])];
+      $("#editTime").textContent = note?.time || "新笔记";
+      $("#deleteBtn").style.visibility = note ? "visible" : "hidden";
+      updateCharCount();
+      renderImages();
+      renderNotes(searchInput.value);
+    }
+
+    function renderImages() {
+      attachmentRow.innerHTML = pendingImages.map((src, index) => `
+        <div class="thumb"><img src="${src}" alt="附件图片 ${index + 1}"><button class="remove-image" data-image-index="${index}" aria-label="移除图片">×</button></div>
+      `).join("") + (pendingImages.length < 3 ? '<button class="add-thumb" id="addThumbBtn"><span>＋</span>添加图片</button>' : "");
+      $("#addThumbBtn")?.addEventListener("click", () => fileInput.click());
+    }
+
+    function updateCharCount() {
+      $("#charCount").textContent = `${bodyInput.value.trim().length} 个字`;
+    }
+
+    function newNote() {
+      currentId = null;
+      titleInput.value = "";
+      bodyInput.value = "";
+      pendingImages = [];
+      $("#editTime").textContent = "新笔记";
+      $("#deleteBtn").style.visibility = "hidden";
+      updateCharCount();
+      renderImages();
+      renderNotes(searchInput.value);
+      titleInput.focus();
+      showToast("已打开空白笔记");
+    }
+
+    function saveNote() {
+      const title = titleInput.value.trim();
+      const body = bodyInput.value.trim();
+      if (!title && !body && pendingImages.length === 0) {
+        showToast("写点内容再保存吧");
+        bodyInput.focus();
+        return;
+      }
+      const now = formatNow();
+      if (currentId == null) {
+        currentId = Date.now();
+        notes.unshift({ id: currentId, title, body, time: now, images: [...pendingImages] });
+      } else {
+        const index = notes.findIndex(note => note.id === currentId);
+        notes[index] = { ...notes[index], title, body, time: now, images: [...pendingImages] };
+        notes.unshift(notes.splice(index, 1)[0]);
+      }
+      $("#editTime").textContent = now;
+      renderNotes(searchInput.value);
+      showToast("笔记已保存在当前演示页面");
+    }
+
+    function deleteNote() {
+      if (currentId == null) return;
+      const note = notes.find(item => item.id === currentId);
+      if (!confirm(`确定删除“${note?.title || "无标题笔记"}”吗？`)) return;
+      notes = notes.filter(item => item.id !== currentId);
+      currentId = notes[0]?.id ?? null;
+      renderEditor();
+      showToast("笔记已删除");
+    }
+
+    let toastTimer;
+    function showToast(message) {
+      const toast = $("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 1900);
+    }
+
+    notesList.addEventListener("click", event => {
+      const card = event.target.closest(".note-card");
+      if (!card) return;
+      currentId = Number(card.dataset.id);
+      renderEditor();
+    });
+
+    attachmentRow.addEventListener("click", event => {
+      const remove = event.target.closest(".remove-image");
+      if (!remove) return;
+      pendingImages.splice(Number(remove.dataset.imageIndex), 1);
+      renderImages();
+    });
+
+    fileInput.addEventListener("change", event => {
+      const remaining = 3 - pendingImages.length;
+      const files = [...event.target.files].slice(0, remaining);
+      if ([...event.target.files].some(file => file.size > 5 * 1024 * 1024)) showToast("已跳过超过 5 MB 的图片");
+      files.filter(file => file.size <= 5 * 1024 * 1024).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = () => { pendingImages.push(reader.result); renderImages(); };
+        reader.readAsDataURL(file);
+      });
+      fileInput.value = "";
+    });
+
+    bodyInput.addEventListener("input", updateCharCount);
+    searchInput.addEventListener("input", () => renderNotes(searchInput.value));
+    $("#newBtn").addEventListener("click", newNote);
+    $("#mobileNewBtn").addEventListener("click", newNote);
+    $("#saveBtn").addEventListener("click", saveNote);
+    $("#deleteBtn").addEventListener("click", deleteNote);
+    $("#photoBtn").addEventListener("click", () => fileInput.click());
+    $(".menu-btn").addEventListener("click", () => showToast("这是原型：完整导航将在正式页面中展开"));
+
+    renderEditor();
+  </script>
+</body>
+</html>

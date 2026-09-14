@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+coverage/
+.env*
+!.env.example
+*.log
+*.tsbuildinfo
+onionmind_*.zip
+.codex/
+output/
+tmp/
+zhihu-hackathon/
